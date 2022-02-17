@@ -29,6 +29,7 @@ use {
         io::Write,
         os::raw::c_char,
         path::{Path, PathBuf},
+        os::raw::c_char,
     },
 };
 
