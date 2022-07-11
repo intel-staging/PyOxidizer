@@ -256,6 +256,7 @@ class UnixCCompiler(CCompiler):
                 'name': '%s.%s' % (package, name) if package else name,
                 'objects': object_paths,
                 'output_filename': our_output_filename,
+                'restore_filename': output_filename,
                 'libraries': libraries or [],
                 'library_dirs': library_dirs or [],
                 'runtime_library_dirs': runtime_library_dirs or [],

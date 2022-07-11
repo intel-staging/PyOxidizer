@@ -495,6 +495,14 @@ class build_ext(Command):
         is_cached = all((d["dist_name"] == self.distribution.get_name(),
                          d["dist_version"] == self.distribution.get_version(),
                          d["name"] == ext.name))
+
+        if is_cached and "restore_filename" in d:
+            restore_filename = d["restore_filename"]
+            cached_filename = d["output_filename"]
+            if cached_filename != restore_filename:
+                os.makedirs(os.path.dirname(restore_filename), exist_ok=True)
+                log.info("restoring from cache %s -> %s" % (cached_filename, restore_filename))
+                shutil.copyfile(cached_filename, restore_filename)
         return is_cached
 
 
