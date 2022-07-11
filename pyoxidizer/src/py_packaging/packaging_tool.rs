@@ -202,12 +202,12 @@ pub fn pip_install<'a, S: BuildHasher>(
     install_args: &[String],
     extra_envs: &HashMap<String, String, S>,
 ) -> Result<Vec<PythonResource<'a>>> {
-    let temp_dir = env.temporary_directory("pyoxidizer-pip-install")?;
+    let cache_dir = env.cache_dir().join("pyoxidizer-pip-install");
 
     dist.ensure_pip()?;
 
     let mut env: HashMap<String, String, RandomState> = std::env::vars().collect();
-    for (k, v) in dist.resolve_distutils(libpython_link_mode, temp_dir.path(), &[])? {
+    for (k, v) in dist.resolve_distutils(libpython_link_mode, &cache_dir, &[])? {
         env.insert(k, v);
     }
 
@@ -215,7 +215,7 @@ pub fn pip_install<'a, S: BuildHasher>(
         env.insert(key.clone(), value.clone());
     }
 
-    let target_dir = temp_dir.path().join("install");
+    let target_dir = cache_dir.join("install");
 
     warn!("pip installing to {}", target_dir.display());
 
@@ -256,8 +256,6 @@ pub fn pip_install<'a, S: BuildHasher>(
 
     let resources =
         find_resources(dist, policy, &target_dir, state_dir).context("scanning for resources")?;
-
-    temp_dir.close().context("closing temporary directory")?;
 
     Ok(resources)
 }
