@@ -25,6 +25,7 @@ from distutils.errors import DistutilsExecError, DistutilsPlatformError, \
 from distutils.ccompiler import CCompiler, gen_lib_options
 from distutils import log
 from distutils.util import get_platform
+from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir
 
 from itertools import count
 
@@ -530,9 +531,6 @@ class MSVCCompiler(CCompiler) :
                            package=None,
                            ):
 
-        if 'PYOXIDIZER_DISTUTILS_STATE_DIR' not in os.environ:
-            raise Exception('PYOXIDIZER_DISTUTILS_STATE_DIR not defined')
-
         # The extension is compiled as a built-in, so linking a shared library
         # won't work due to symbol visibility/export issues. The extension is
         # expecting all CPython symbols to be available in the current binary,
@@ -548,7 +546,7 @@ class MSVCCompiler(CCompiler) :
         # In addition to performing the requested link, we also write out
         # files that PyOxidizer can use to embed the extension in a larger
         # binary.
-        dest_path = os.environ['PYOXIDIZER_DISTUTILS_STATE_DIR']
+        dest_path = pyoxidizer_state_dir
 
         # We need to copy the object files because they may be in a temp
         # directory that doesn't outlive this process.
@@ -563,6 +561,8 @@ class MSVCCompiler(CCompiler) :
         json_path = os.path.join(dest_path, 'extension.%s.json' % name)
         with open(json_path, 'w', encoding='utf-8') as fh:
             data = {
+                'dist_name': self.dist.get_name(),
+                'dist_version': self.dist.get_version(),
                 'name': '%s.%s' % (package, name) if package else name,
                 'objects': object_paths,
                 'output_filename': os.path.abspath(output_filename),

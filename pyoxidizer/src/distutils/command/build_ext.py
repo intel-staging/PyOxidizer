@@ -7,6 +7,7 @@ extensions ASAP)."""
 import contextlib
 import os
 import re
+import shutil
 import sys
 from distutils.core import Command
 from distutils.errors import *
@@ -16,6 +17,7 @@ from distutils.dep_util import newer_group
 from distutils.extension import Extension
 from distutils.util import get_platform
 from distutils import log
+from distutils.pyoxidizer_utils import get_extension_details
 
 from site import USER_BASE
 
@@ -336,6 +338,9 @@ class build_ext(Command):
         if self.link_objects is not None:
             self.compiler.set_link_objects(self.link_objects)
 
+        # PyOxidizer: We need the compiler to access to our dist for metadata
+        self.compiler.dist = self.distribution
+
         # Now actually compile and link everything.
         self.build_extensions()
 
@@ -483,7 +488,22 @@ class build_ext(Command):
             self.warn('building extension "%s" failed: %s' %
                       (ext.name, e))
 
+    def _pyoxidizer_restore_from_cache(self, ext):
+        d = get_extension_details(ext.name)
+        if d is None:
+            return False
+        is_cached = all((d["dist_name"] == self.distribution.get_name(),
+                         d["dist_version"] == self.distribution.get_version(),
+                         d["name"] == ext.name))
+        return is_cached
+
+
     def build_extension(self, ext):
+        # PyOxidizer optimization: Skip this extension if already in the state dir
+        if self._pyoxidizer_restore_from_cache(ext):
+            log.info("skipping invoking build of extension '%s' because we found it in the cache", ext.name)
+            return
+
         sources = ext.sources
         if sources is None or not isinstance(sources, (list, tuple)):
             raise DistutilsSetupError(

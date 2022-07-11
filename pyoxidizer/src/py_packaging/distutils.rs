@@ -35,6 +35,11 @@ static MODIFIED_DISTUTILS_FILES: Lazy<BTreeMap<&'static str, &'static [u8]>> = L
         "unixccompiler.py",
         include_bytes!("../distutils/unixccompiler.py"),
     );
+    // This file is not modified but actually added into distutils
+    res.insert(
+        "pyoxidizer_utils.py",
+        include_bytes!("../distutils/pyoxidizer_utils.py")
+    );
 
     res
 });
