@@ -10,6 +10,7 @@ use {
     super::{
         binary::LibpythonLinkMode, distribution::PythonDistribution,
         distutils::read_built_extensions, standalone_distribution::resolve_python_paths,
+        environment::Environment
     },
     crate::environment::Environment,
     anyhow::{anyhow, Context, Result},
@@ -192,6 +193,11 @@ pub fn pip_download<'a>(
     Ok(res)
 }
 
+fn get_cache_root() -> PathBuf {
+    let env = Environment::new();  // We create a "default env" to obtain the resolved cache dir
+    return env.cache_dir();
+}
+
 /// Run `pip install` and return found resources.
 pub fn pip_install<'a, S: BuildHasher>(
     env: &Environment,
@@ -202,7 +208,7 @@ pub fn pip_install<'a, S: BuildHasher>(
     install_args: &[String],
     extra_envs: &HashMap<String, String, S>,
 ) -> Result<Vec<PythonResource<'a>>> {
-    let cache_dir = env.cache_dir().join("pyoxidizer-pip-install");
+    let cache_dir = get_cache_root().join("pyoxidizer-pip-install");
 
     dist.ensure_pip()?;
 
