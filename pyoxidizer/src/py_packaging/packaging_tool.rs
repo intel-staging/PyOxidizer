@@ -193,9 +193,9 @@ pub fn pip_download<'a>(
     Ok(res)
 }
 
-fn get_cache_root() -> PathBuf {
-    let env = Environment::new();  // We create a "default env" to obtain the resolved cache dir
-    return env.cache_dir();
+fn get_cache_root() -> Result<PathBuf> {
+    let env = Environment::new()?;  // We create a "default env" to obtain the resolved cache dir
+    Ok(env.cache_dir().to_owned())
 }
 
 /// Run `pip install` and return found resources.
@@ -208,7 +208,7 @@ pub fn pip_install<'a, S: BuildHasher>(
     install_args: &[String],
     extra_envs: &HashMap<String, String, S>,
 ) -> Result<Vec<PythonResource<'a>>> {
-    let cache_dir = get_cache_root().join("pyoxidizer-pip-install");
+    let cache_dir = get_cache_root()?.join("pyoxidizer-pip-install");
 
     dist.ensure_pip()?;
 
