@@ -132,7 +132,7 @@ struct DistutilsExtensionState {
     name: String,
     objects: Vec<String>,
     output_filename: String,
-    restore_filename: Option<String>, // Used by patched built_ext.py
+    restore_filename: Option<String>, // Used by patched build_ext.py
     libraries: Vec<String>,
     library_dirs: Vec<String>,
     runtime_library_dirs: Vec<String>,
