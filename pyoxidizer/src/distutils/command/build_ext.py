@@ -17,7 +17,7 @@ from distutils.dep_util import newer_group
 from distutils.extension import Extension
 from distutils.util import get_platform
 from distutils import log
-from distutils.pyoxidizer_utils import get_extension_details, get_architecture
+from distutils.pyoxidizer_utils import get_extension_details, get_architecture, hash_files
 
 from site import USER_BASE
 
@@ -496,7 +496,7 @@ class build_ext(Command):
                          d["dist_version"] == self.distribution.get_version(),
                          d["name"] == ext.name,
                          d["architecture"] == get_architecture(),
-                         set(d["sources"]) == set(sources),
+                         d["sources_hash"] == hash_files(sources),
                          set(d["libraries"]) == set(libraries),
                          ))
 

@@ -25,7 +25,7 @@ from distutils.errors import DistutilsExecError, DistutilsPlatformError, \
 from distutils.ccompiler import CCompiler, gen_lib_options
 from distutils import log
 from distutils.util import get_platform
-from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir, get_architecture
+from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir, get_architecture, hash_files
 
 from itertools import count
 
@@ -570,7 +570,7 @@ class MSVCCompiler(CCompiler) :
                 'libraries': libraries or [],
                 'library_dirs': library_dirs or [],
                 'runtime_library_dirs': runtime_library_dirs or [],
-                'sources': sources,
+                'sources_hash': hash_files(sources)
             }
             json.dump(data, fh, indent=4, sort_keys=True)
 
