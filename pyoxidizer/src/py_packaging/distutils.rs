@@ -129,16 +129,21 @@ pub fn prepare_hacked_distutils(
 
 #[derive(Debug, Deserialize)]
 struct DistutilsExtensionState {
+    #[allow(dead_code)]
     dist_name: String,
+    #[allow(dead_code)]
     dist_version: String,
     name: String,
+    #[allow(dead_code)]
     architecture: String,
     objects: Vec<String>,
     output_filename: String,
+    #[allow(dead_code)]
     restore_filename: Option<String>, // Used by patched build_ext.py
     libraries: Vec<String>,
     library_dirs: Vec<String>,
     runtime_library_dirs: Vec<String>,
+    #[allow(dead_code)]
     sources_hash: String,
 }
 
