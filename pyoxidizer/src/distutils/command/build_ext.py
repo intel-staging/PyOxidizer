@@ -488,7 +488,7 @@ class build_ext(Command):
             self.warn('building extension "%s" failed: %s' %
                       (ext.name, e))
 
-    def _pyoxidizer_restore_from_cache(self, ext, libraries):
+    def _pyoxidizer_restore_from_cache(self, ext, sources, libraries):
         d = get_extension_details(ext.name)
         if d is None:
             return False
@@ -496,6 +496,7 @@ class build_ext(Command):
                          d["dist_version"] == self.distribution.get_version(),
                          d["name"] == ext.name,
                          d["architecture"] == get_architecture(),
+                         set(d["sources"]) == set(sources),
                          set(d["libraries"]) == set(libraries),
                          ))
 
@@ -510,12 +511,6 @@ class build_ext(Command):
 
 
     def build_extension(self, ext):
-        # PyOxidizer optimization: Skip this extension if already in the state dir
-        libraries = self.get_libraries(ext)
-        if self._pyoxidizer_restore_from_cache(ext, libraries):
-            log.info("skipping invoking build of extension '%s' because we found it in the cache", ext.name)
-            return
-
         sources = ext.sources
         if sources is None or not isinstance(sources, (list, tuple)):
             raise DistutilsSetupError(
@@ -562,6 +557,12 @@ class build_ext(Command):
         if os.name == 'nt':
             macros.append(('Py_BUILD_CORE_BUILTIN', '1'))
 
+        ### PyOxidizer optimization: Skip the compilation if already in the state dir ###
+        libraries = self.get_libraries(ext)
+        if self._pyoxidizer_restore_from_cache(ext, sources, libraries):
+            log.info("skipping invoking build of extension '%s' because we found it in the cache", ext.name)
+            return
+
         objects = self.compiler.compile(sources,
                                          output_dir=self.build_temp,
                                          macros=macros,
@@ -586,7 +587,7 @@ class build_ext(Command):
 
         if hasattr(self.compiler, 'extension_link_shared_object'):
             fn = self.compiler.extension_link_shared_object
-            extra_kwargs = {'name': ext.name, 'package': self.package}
+            extra_kwargs = {'name': ext.name, 'package': self.package, 'sources': sources}
         else:
             fn = self.compiler.link_shared_object
             extra_kwargs = {}
