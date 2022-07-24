@@ -529,6 +529,7 @@ class MSVCCompiler(CCompiler) :
                            target_lang=None,
                            name=None,
                            package=None,
+                           sources=None,
                            ):
 
         # The extension is compiled as a built-in, so linking a shared library
@@ -569,6 +570,7 @@ class MSVCCompiler(CCompiler) :
                 'libraries': libraries or [],
                 'library_dirs': library_dirs or [],
                 'runtime_library_dirs': runtime_library_dirs or [],
+                'sources': sources,
             }
             json.dump(data, fh, indent=4, sort_keys=True)
 

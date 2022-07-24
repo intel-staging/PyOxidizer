@@ -223,6 +223,7 @@ class UnixCCompiler(CCompiler):
                            target_lang=None,
                            name=None,
                            package=None,
+                           sources=None,
                            ):
 
         self.link(CCompiler.SHARED_OBJECT, objects,
@@ -261,6 +262,7 @@ class UnixCCompiler(CCompiler):
                 'libraries': libraries or [],
                 'library_dirs': library_dirs or [],
                 'runtime_library_dirs': runtime_library_dirs or [],
+                'sources': sources
             }
             json.dump(data, fh, indent=4, sort_keys=True)
 
