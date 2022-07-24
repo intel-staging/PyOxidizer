@@ -25,7 +25,7 @@ from distutils.errors import DistutilsExecError, DistutilsPlatformError, \
 from distutils.ccompiler import CCompiler, gen_lib_options
 from distutils import log
 from distutils.util import get_platform
-from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir
+from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir, get_architecture
 
 from itertools import count
 
@@ -564,6 +564,7 @@ class MSVCCompiler(CCompiler) :
                 'dist_name': self.dist.get_name(),
                 'dist_version': self.dist.get_version(),
                 'name': '%s.%s' % (package, name) if package else name,
+                'architecture': get_architecture(),
                 'objects': object_paths,
                 'output_filename': os.path.abspath(output_filename),
                 'libraries': libraries or [],

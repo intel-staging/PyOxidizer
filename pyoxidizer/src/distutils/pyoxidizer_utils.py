@@ -3,7 +3,7 @@
 This module is injected to the distribution by PyOxidizer
 """
 
-import os, json
+import os, json, platform
 
 try:
     pyoxidizer_state_dir = os.environ['PYOXIDIZER_DISTUTILS_STATE_DIR']
@@ -22,3 +22,6 @@ def get_extension_details(name):
             return json.load(fh)
     except FileNotFoundError:
         return None
+
+def get_architecture():
+    return ' '.join(platform.architecture())
