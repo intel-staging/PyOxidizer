@@ -17,7 +17,7 @@ from distutils.dep_util import newer_group
 from distutils.extension import Extension
 from distutils.util import get_platform
 from distutils import log
-from distutils.pyoxidizer_utils import get_extension_details
+from distutils.pyoxidizer_utils import get_extension_details, get_architecture
 
 from site import USER_BASE
 
@@ -495,6 +495,7 @@ class build_ext(Command):
         is_cached = all((d["dist_name"] == self.distribution.get_name(),
                          d["dist_version"] == self.distribution.get_version(),
                          d["name"] == ext.name,
+                         d["architecture"] == get_architecture(),
                          set(d["libraries"]) == set(libraries),
                          ))
 
