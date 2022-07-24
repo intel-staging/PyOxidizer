@@ -129,13 +129,17 @@ pub fn prepare_hacked_distutils(
 
 #[derive(Debug, Deserialize)]
 struct DistutilsExtensionState {
+    dist_name: String,
+    dist_version: String,
     name: String,
+    architecture: String,
     objects: Vec<String>,
     output_filename: String,
     restore_filename: Option<String>, // Used by patched build_ext.py
     libraries: Vec<String>,
     library_dirs: Vec<String>,
     runtime_library_dirs: Vec<String>,
+    sources_hash: String,
 }
 
 pub fn read_built_extensions(state_dir: &Path) -> Result<Vec<PythonExtensionModule>> {
