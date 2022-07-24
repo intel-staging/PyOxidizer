@@ -22,7 +22,7 @@ from distutils.ccompiler import \
 from distutils.errors import \
      DistutilsExecError, CompileError, LibError, LinkError
 from distutils import log
-from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir, get_architecture
+from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir, get_architecture, hash_files
 
 if sys.platform == 'darwin':
     import _osx_support
@@ -262,7 +262,7 @@ class UnixCCompiler(CCompiler):
                 'libraries': libraries or [],
                 'library_dirs': library_dirs or [],
                 'runtime_library_dirs': runtime_library_dirs or [],
-                'sources': sources
+                'sources_hash': hash_files(sources)
             }
             json.dump(data, fh, indent=4, sort_keys=True)
 

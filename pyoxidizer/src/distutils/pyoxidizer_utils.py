@@ -4,6 +4,7 @@ This module is injected to the distribution by PyOxidizer
 """
 
 import os, json, platform
+from hashlib import sha256
 
 try:
     pyoxidizer_state_dir = os.environ['PYOXIDIZER_DISTUTILS_STATE_DIR']
@@ -25,3 +26,12 @@ def get_extension_details(name):
 
 def get_architecture():
     return ' '.join(platform.architecture())
+
+
+def hash_files(files):
+    hash_obj = sha256()
+    files_sorted = sorted(files)
+    for path in files_sorted:
+        with open(path, 'rb') as fh:
+            hash_obj.update(fh.read())
+    return hash_obj.hexdigest()
