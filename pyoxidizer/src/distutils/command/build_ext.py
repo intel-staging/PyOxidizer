@@ -488,13 +488,15 @@ class build_ext(Command):
             self.warn('building extension "%s" failed: %s' %
                       (ext.name, e))
 
-    def _pyoxidizer_restore_from_cache(self, ext):
+    def _pyoxidizer_restore_from_cache(self, ext, libraries):
         d = get_extension_details(ext.name)
         if d is None:
             return False
         is_cached = all((d["dist_name"] == self.distribution.get_name(),
                          d["dist_version"] == self.distribution.get_version(),
-                         d["name"] == ext.name))
+                         d["name"] == ext.name,
+                         set(d["libraries"]) == set(libraries),
+                         ))
 
         if is_cached and "restore_filename" in d:
             restore_filename = d["restore_filename"]
@@ -508,7 +510,8 @@ class build_ext(Command):
 
     def build_extension(self, ext):
         # PyOxidizer optimization: Skip this extension if already in the state dir
-        if self._pyoxidizer_restore_from_cache(ext):
+        libraries = self.get_libraries(ext)
+        if self._pyoxidizer_restore_from_cache(ext, libraries):
             log.info("skipping invoking build of extension '%s' because we found it in the cache", ext.name)
             return
 
@@ -589,7 +592,7 @@ class build_ext(Command):
 
         fn(
             objects, ext_path,
-            libraries=self.get_libraries(ext),
+            libraries=libraries,
             library_dirs=ext.library_dirs,
             runtime_library_dirs=ext.runtime_library_dirs,
             extra_postargs=extra_args,
