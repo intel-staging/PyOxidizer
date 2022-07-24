@@ -558,8 +558,7 @@ class MSVCCompiler(CCompiler) :
 
         # Write out a file with the information about the extension. PyOxidizer
         # will read this to know how to ingest the extension.
-        json_path = os.path.join(dest_path, 'extension.%s.json' % name)
-        with open(json_path, 'w', encoding='utf-8') as fh:
+        with open(get_extension_json_path(name), 'w', encoding='utf-8') as fh:
             data = {
                 'dist_name': self.dist.get_name(),
                 'dist_version': self.dist.get_version(),
