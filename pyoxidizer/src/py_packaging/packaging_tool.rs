@@ -9,8 +9,7 @@ Interaction with Python packaging tools (pip, setuptools, etc).
 use {
     super::{
         binary::LibpythonLinkMode, distribution::PythonDistribution,
-        distutils::read_built_extensions, standalone_distribution::resolve_python_paths,
-        super::environment::Environment
+        distutils::read_built_extensions, standalone_distribution::resolve_python_paths
     },
     crate::environment::Environment,
     anyhow::{anyhow, Context, Result},
