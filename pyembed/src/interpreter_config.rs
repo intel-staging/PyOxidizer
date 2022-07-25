@@ -17,7 +17,6 @@ use {
         ffi::{CString, OsString},
         path::Path,
     },
-    libc::wchar_t,
 };
 
 #[cfg(target_family = "unix")]
