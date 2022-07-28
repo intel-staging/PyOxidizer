@@ -256,6 +256,7 @@ class UnixCCompiler(CCompiler):
                 'dist_version': self.dist.get_version(),
                 'name': '%s.%s' % (package, name) if package else name,
                 'architecture': get_architecture(),
+                'sys_version': sys.version,
                 'objects': object_paths,
                 'output_filename': our_output_filename,
                 'restore_filename': output_filename,

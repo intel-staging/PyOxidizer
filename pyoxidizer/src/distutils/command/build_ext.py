@@ -496,6 +496,7 @@ class build_ext(Command):
                          d["dist_version"] == self.distribution.get_version(),
                          d["name"] == ext.name,
                          d["architecture"] == get_architecture(),
+                         d["sys_version"] == sys.version,
                          d["sources_hash"] == hash_files(sources),
                          set(d["libraries"]) == set(libraries),
                          ))

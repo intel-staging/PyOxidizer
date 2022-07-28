@@ -17,6 +17,7 @@ import json
 import os
 import shutil
 import stat
+import sys
 import subprocess
 import winreg
 
@@ -565,6 +566,7 @@ class MSVCCompiler(CCompiler) :
                 'dist_version': self.dist.get_version(),
                 'name': '%s.%s' % (package, name) if package else name,
                 'architecture': get_architecture(),
+                'sys_version': sys.version,
                 'objects': object_paths,
                 'output_filename': os.path.abspath(output_filename),
                 'libraries': libraries or [],
