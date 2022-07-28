@@ -7,6 +7,7 @@ extensions ASAP)."""
 import contextlib
 import os
 import re
+import shutil
 import sys
 from distutils.core import Command
 from distutils.errors import *
@@ -16,6 +17,7 @@ from distutils.dep_util import newer_group
 from distutils.extension import Extension
 from distutils.util import get_platform
 from distutils import log
+from distutils.pyoxidizer_utils import get_extension_details, get_architecture, hash_files
 
 from site import USER_BASE
 
@@ -336,6 +338,9 @@ class build_ext(Command):
         if self.link_objects is not None:
             self.compiler.set_link_objects(self.link_objects)
 
+        # PyOxidizer: We need the compiler to access to our dist for metadata
+        self.compiler.dist = self.distribution
+
         # Now actually compile and link everything.
         self.build_extensions()
 
@@ -483,6 +488,29 @@ class build_ext(Command):
             self.warn('building extension "%s" failed: %s' %
                       (ext.name, e))
 
+    def _pyoxidizer_restore_from_cache(self, ext, sources, libraries):
+        d = get_extension_details(ext.name)
+        if d is None:
+            return False
+        is_cached = all((d["dist_name"] == self.distribution.get_name(),
+                         d["dist_version"] == self.distribution.get_version(),
+                         d["name"] == ext.name,
+                         d["architecture"] == get_architecture(),
+                         d["sys_version"] == sys.version,
+                         d["sources_hash"] == hash_files(sources),
+                         set(d["libraries"]) == set(libraries),
+                         ))
+
+        if is_cached and "restore_filename" in d:
+            restore_filename = d["restore_filename"]
+            cached_filename = d["output_filename"]
+            if cached_filename != restore_filename:
+                os.makedirs(os.path.dirname(restore_filename), exist_ok=True)
+                log.info("restoring from cache %s -> %s" % (cached_filename, restore_filename))
+                shutil.copyfile(cached_filename, restore_filename)
+        return is_cached
+
+
     def build_extension(self, ext):
         sources = ext.sources
         if sources is None or not isinstance(sources, (list, tuple)):
@@ -530,6 +558,12 @@ class build_ext(Command):
         if os.name == 'nt':
             macros.append(('Py_BUILD_CORE_BUILTIN', '1'))
 
+        ### PyOxidizer optimization: Skip the compilation if already in the state dir ###
+        libraries = self.get_libraries(ext)
+        if self._pyoxidizer_restore_from_cache(ext, sources, libraries):
+            log.info("skipping invoking build of extension '%s' because we found it in the cache", ext.name)
+            return
+
         objects = self.compiler.compile(sources,
                                          output_dir=self.build_temp,
                                          macros=macros,
@@ -554,14 +588,14 @@ class build_ext(Command):
 
         if hasattr(self.compiler, 'extension_link_shared_object'):
             fn = self.compiler.extension_link_shared_object
-            extra_kwargs = {'name': ext.name, 'package': self.package}
+            extra_kwargs = {'name': ext.name, 'package': self.package, 'sources': sources}
         else:
             fn = self.compiler.link_shared_object
             extra_kwargs = {}
 
         fn(
             objects, ext_path,
-            libraries=self.get_libraries(ext),
+            libraries=libraries,
             library_dirs=ext.library_dirs,
             runtime_library_dirs=ext.runtime_library_dirs,
             extra_postargs=extra_args,

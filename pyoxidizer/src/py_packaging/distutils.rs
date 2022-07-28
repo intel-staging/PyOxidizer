@@ -35,6 +35,11 @@ static MODIFIED_DISTUTILS_FILES: Lazy<BTreeMap<&'static str, &'static [u8]>> = L
         "unixccompiler.py",
         include_bytes!("../distutils/unixccompiler.py"),
     );
+    // This file is not modified but actually added into distutils
+    res.insert(
+        "pyoxidizer_utils.py",
+        include_bytes!("../distutils/pyoxidizer_utils.py")
+    );
 
     res
 });
@@ -124,12 +129,22 @@ pub fn prepare_hacked_distutils(
 
 #[derive(Debug, Deserialize)]
 struct DistutilsExtensionState {
+    #[allow(dead_code)]
+    dist_name: String,
+    #[allow(dead_code)]
+    dist_version: String,
     name: String,
+    #[allow(dead_code)]
+    architecture: String,
     objects: Vec<String>,
     output_filename: String,
+    #[allow(dead_code)]
+    restore_filename: Option<String>, // Used by patched build_ext.py
     libraries: Vec<String>,
     library_dirs: Vec<String>,
     runtime_library_dirs: Vec<String>,
+    #[allow(dead_code)]
+    sources_hash: String,
 }
 
 pub fn read_built_extensions(state_dir: &Path) -> Result<Vec<PythonExtensionModule>> {

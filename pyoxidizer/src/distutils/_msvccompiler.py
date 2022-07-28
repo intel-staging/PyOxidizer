@@ -17,6 +17,7 @@ import json
 import os
 import shutil
 import stat
+import sys
 import subprocess
 import winreg
 
@@ -25,6 +26,7 @@ from distutils.errors import DistutilsExecError, DistutilsPlatformError, \
 from distutils.ccompiler import CCompiler, gen_lib_options
 from distutils import log
 from distutils.util import get_platform
+from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir, get_architecture, hash_files
 
 from itertools import count
 
@@ -528,10 +530,8 @@ class MSVCCompiler(CCompiler) :
                            target_lang=None,
                            name=None,
                            package=None,
+                           sources=None,
                            ):
-
-        if 'PYOXIDIZER_DISTUTILS_STATE_DIR' not in os.environ:
-            raise Exception('PYOXIDIZER_DISTUTILS_STATE_DIR not defined')
 
         # The extension is compiled as a built-in, so linking a shared library
         # won't work due to symbol visibility/export issues. The extension is
@@ -548,7 +548,7 @@ class MSVCCompiler(CCompiler) :
         # In addition to performing the requested link, we also write out
         # files that PyOxidizer can use to embed the extension in a larger
         # binary.
-        dest_path = os.environ['PYOXIDIZER_DISTUTILS_STATE_DIR']
+        dest_path = pyoxidizer_state_dir
 
         # We need to copy the object files because they may be in a temp
         # directory that doesn't outlive this process.
@@ -560,15 +560,19 @@ class MSVCCompiler(CCompiler) :
 
         # Write out a file with the information about the extension. PyOxidizer
         # will read this to know how to ingest the extension.
-        json_path = os.path.join(dest_path, 'extension.%s.json' % name)
-        with open(json_path, 'w', encoding='utf-8') as fh:
+        with open(get_extension_json_path(name), 'w', encoding='utf-8') as fh:
             data = {
+                'dist_name': self.dist.get_name(),
+                'dist_version': self.dist.get_version(),
                 'name': '%s.%s' % (package, name) if package else name,
+                'architecture': get_architecture(),
+                'sys_version': sys.version,
                 'objects': object_paths,
                 'output_filename': os.path.abspath(output_filename),
                 'libraries': libraries or [],
                 'library_dirs': library_dirs or [],
                 'runtime_library_dirs': runtime_library_dirs or [],
+                'sources_hash': hash_files(sources)
             }
             json.dump(data, fh, indent=4, sort_keys=True)
 

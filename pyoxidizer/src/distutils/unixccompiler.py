@@ -22,6 +22,7 @@ from distutils.ccompiler import \
 from distutils.errors import \
      DistutilsExecError, CompileError, LibError, LinkError
 from distutils import log
+from distutils.pyoxidizer_utils import get_extension_json_path, pyoxidizer_state_dir, get_architecture, hash_files
 
 if sys.platform == 'darwin':
     import _osx_support
@@ -222,10 +223,8 @@ class UnixCCompiler(CCompiler):
                            target_lang=None,
                            name=None,
                            package=None,
+                           sources=None,
                            ):
-
-        if 'PYOXIDIZER_DISTUTILS_STATE_DIR' not in os.environ:
-            raise Exception('PYOXIDIZER_DISTUTILS_STATE_DIR not defined')
 
         self.link(CCompiler.SHARED_OBJECT, objects,
                   output_filename, output_dir,
@@ -236,7 +235,7 @@ class UnixCCompiler(CCompiler):
         # In addition to performing the requested link, we also write out
         # files that PyOxidizer can use to embed the extension in a larger
         # binary.
-        dest_path = os.environ['PYOXIDIZER_DISTUTILS_STATE_DIR']
+        dest_path = pyoxidizer_state_dir
 
         # We need to copy the generated files because they may be in a temp
         # directory that doesn't outlive this process.
@@ -251,15 +250,20 @@ class UnixCCompiler(CCompiler):
 
         # Write out a file with the information about the extension. PyOxidizer
         # will read this to know how to ingest the extension.
-        json_path = os.path.join(dest_path, 'extension.%s.json' % name)
-        with open(json_path, 'w', encoding='utf-8') as fh:
+        with open(get_extension_json_path(name), 'w', encoding='utf-8') as fh:
             data = {
+                'dist_name': self.dist.get_name(),
+                'dist_version': self.dist.get_version(),
                 'name': '%s.%s' % (package, name) if package else name,
+                'architecture': get_architecture(),
+                'sys_version': sys.version,
                 'objects': object_paths,
                 'output_filename': our_output_filename,
+                'restore_filename': output_filename,
                 'libraries': libraries or [],
                 'library_dirs': library_dirs or [],
                 'runtime_library_dirs': runtime_library_dirs or [],
+                'sources_hash': hash_files(sources)
             }
             json.dump(data, fh, indent=4, sort_keys=True)
 
